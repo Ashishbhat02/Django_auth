@@ -78,7 +78,6 @@ class LoginView(APIView):
 class S3BucketView(APIView):
    s3_client = boto3.client(
     's3',
-
     aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
     aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
     region_name=settings.AWS_S3_REGION_NAME
@@ -87,12 +86,22 @@ class S3BucketView(APIView):
        aws_bucket_name = settings.AWS_STORAGE_BUCKET_NAME
        items = self.s3_client.list_objects_v2(Bucket=aws_bucket_name)
        files = [item['Key'] for item in items.get('Contents' , [])]
-       file_key = files[0]
-       get_item = self.s3_client.get_object(Bucket=aws_bucket_name , Key = file_key)
-       file_content = get_item['Body'].read().decode('utf-8')  # Decode for text-based files
-       return Response({
-                "file_name": file_key,
-                "file_content": file_content
-        })
+       if not files:
+           return Response("NO FILE PRESENT IN THE BUCKET!!")
+       #FOR MULTIPLE FILES
+       multi_files = []
+       for files_key in files:
+            get_item = self.s3_client.get_object(Bucket=aws_bucket_name , Key = files_key)
+            file_content = get_item['Body'].read().decode('utf-8')  # Decode for text-based files
+            multi_files.append({
+                "file name":files_key,
+                "file content":file_content
+            })
+            return Response({"file":multi_files})
    
-     
+    #FOR ONLY 1 FILE 
+    #    file_key = files[0]
+    #    return Response({
+    #         "file_name": file_key,
+    #         "file_content": file_content
+    #     })
