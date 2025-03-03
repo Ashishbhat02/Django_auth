@@ -16,26 +16,29 @@ from django.conf import settings
 
 # THIS API IS FOR ALL EMP_DETAILS PRESENT IN THE DB
 class DetailsViews(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]
+    # permission_classes = [IsAuthenticated]
     def get(self, request):
         data = User.objects.all()
         details_serializer = UserSerializer(data , many = True)
-        return Response(details_serializer.data)
-    
+        return Response(details_serializer.data)    
 
 # THIS API IS FOR DESIGNATION WITH THERE RESPECTIVE NAME   
 class designationViews(APIView):
     def get(self, request):
         all_data = Employee.objects.all()
-        designation_detail_serializer = DesignationSerializer(all_data , many=True)
+        departments = Employee.objects.filter(department = "SRE")
+        designation_detail_serializer = DesignationSerializer(departments , many=True)
         return Response(designation_detail_serializer.data)
 
 # THIS API IS FOR DEPARTMENT WITH THERE RESPECTIVE NAME   
 class departmentViews(APIView):
     def get(self, request):
         all_data = Employee.objects.all()
-        department_detail_serializer = DepartmentSerializer(all_data , many=True)
+        devops_department = Employee.objects.filter(department = "Devops")
+        department_detail_serializer = DepartmentSerializer(devops_department , many=True)
+        if not devops_department.exists():
+            return HttpResponse("NO EMPLOYEE FOUND !!")
         return Response(department_detail_serializer.data)
 
 
@@ -83,21 +86,47 @@ class S3BucketView(APIView):
     region_name=settings.AWS_S3_REGION_NAME
     )
    def get(self,request):
-       aws_bucket_name = settings.AWS_STORAGE_BUCKET_NAME
-       items = self.s3_client.list_objects_v2(Bucket=aws_bucket_name)
-       files = [item['Key'] for item in items.get('Contents' , [])]
-       if not files:
-           return Response("NO FILE PRESENT IN THE BUCKET!!")
-       #FOR MULTIPLE FILES
-       multi_files = []
-       for files_key in files:
-            get_item = self.s3_client.get_object(Bucket=aws_bucket_name , Key = files_key)
-            file_content = get_item['Body'].read().decode('utf-8')  # Decode for text-based files
-            multi_files.append({
-                "file name":files_key,
-                "file content":file_content
+            #access alla the bucket names
+
+            s3_bucket = self.s3_client.list_buckets()
+            # s3_bucket_name = s3_bucket['Buckets']  
+            s3_bucket_names = [bucket_name['Name'] for bucket_name in s3_bucket.get('Buckets' , [])] 
+
+
+
+            #access content of the buckets
+
+            Content = {}
+            for s3_bucket_name in s3_bucket_names:
+                s3_content = self.s3_client.list_objects_v2(Bucket = s3_bucket_name)
+                Content[s3_bucket_name] = [contents['Key'] for contents in s3_content.get('Contents' , [])]
+
+            return Response({
+                "Bucket_name":s3_bucket_name,
+                "Content": Content
             })
-            return Response({"file":multi_files})
+
+        
+            # s3_content = self.s3_client.list_objects_v2()
+            # bucket_name = [bucket['Key'] for bucket in s3_bucket.get('Contents',[])]
+            # contents = [content['Key'] for content in s3_content.get('Contents',[])]
+            # content_read = contents['Body'].read()
+    #    aws_bucket_name = settings.AWS_STORAGE_BUCKET_NAME
+    #    items = self.s3_client.list_objects_v2(Bucket=aws_bucket_name)
+    #    files = [item['Key'] for item in items.get('Contents' , [])]
+    #    if not files:
+    #        return Response("NO FILE PRESENT IN THE BUCKET!!")
+    #    #FOR MULTIPLE FILES
+    #    multi_files = []
+    #    for files_key in files:
+    #         get_item = self.s3_client.get_object(Bucket=aws_bucket_name , Key = files_key)
+    #         file_content = get_item['Body'].read().decode('utf-8')  # Decode for text-based files
+    #         multi_files.append({
+    #             "file name":files_key,
+    #             "file content":file_content
+    #         })
+
+            # return Response({"bucket":bucket_name})
    
     #FOR ONLY 1 FILE 
     #    file_key = files[0]

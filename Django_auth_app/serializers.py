@@ -11,13 +11,13 @@ class DesignationSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(source='user.full_name', read_only=True)
     class Meta:
         model = Employee
-        fields = ['id','full_name','designation']
+        fields = ['id','full_name','designation','department']
 
 class DepartmentSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(source='user.full_name', read_only=True)
     class Meta:
         model = Employee
-        fields = ['id','full_name','department']
+        fields = ['id','full_name','department','designation']
 
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
