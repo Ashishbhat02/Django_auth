@@ -25,7 +25,7 @@ class DetailsViews(APIView):
 
 # THIS API IS FOR DESIGNATION WITH THERE RESPECTIVE NAME   
 class designationViews(APIView):
-    def get(self, request):
+    def post(self, request):
         all_data = Employee.objects.all()
         input_designation =  request.data.get('designation')
         departments = Employee.objects.filter(department = input_designation)
@@ -38,7 +38,7 @@ class designationViews(APIView):
 
 # THIS API IS FOR DEPARTMENT WITH THERE RESPECTIVE NAME   
 class departmentViews(APIView):
-    def get(self, request):
+    def post(self, request):
         all_data = Employee.objects.all()
         input_department = request.data.get('department')
         devops_department = Employee.objects.filter(department = input_department)
