@@ -27,19 +27,33 @@ class DetailsViews(APIView):
 class designationViews(APIView):
     def get(self, request):
         all_data = Employee.objects.all()
-        departments = Employee.objects.filter(department = "SRE")
-        designation_detail_serializer = DesignationSerializer(departments , many=True)
+        input_designation =  request.data.get('designation')
+        departments = Employee.objects.filter(department = input_designation)
+        if input_designation is not None:
+            designation_detail_serializer = DesignationSerializer(departments , many=True) 
+            return Response(designation_detail_serializer.data)
+        designation_detail_serializer = DepartmentSerializer(all_data , many=True)
         return Response(designation_detail_serializer.data)
+    
 
 # THIS API IS FOR DEPARTMENT WITH THERE RESPECTIVE NAME   
 class departmentViews(APIView):
     def get(self, request):
         all_data = Employee.objects.all()
-        devops_department = Employee.objects.filter(department = "Devops")
-        department_detail_serializer = DepartmentSerializer(devops_department , many=True)
-        if not devops_department.exists():
-            return HttpResponse("NO EMPLOYEE FOUND !!")
-        return Response(department_detail_serializer.data)
+        input_department = request.data.get('department')
+        devops_department = Employee.objects.filter(department = input_department)
+        if input_department is not None:
+            department_detail_serializer = DepartmentSerializer(devops_department , many=True) 
+            return Response(department_detail_serializer.data)
+        department_detail_serializer = DepartmentSerializer(all_data , many=True)
+        return Response(department_detail_serializer.data)               
+        
+        # devops_department = Employee.objects.filter(department = 'Devops')
+        
+        
+        # if not devops_department.exists():
+        #     return HttpResponse("NO EMPLOYEE FOUND !!")
+        # return Response(department_detail_serializer.data)
 
 
 #REGISTER API
@@ -99,6 +113,7 @@ class S3BucketView(APIView):
             Content = {}
             for s3_bucket_name in s3_bucket_names:
                 s3_content = self.s3_client.list_objects_v2(Bucket = s3_bucket_name)
+
                 Content[s3_bucket_name] = [contents['Key'] for contents in s3_content.get('Contents' , [])]
 
             return Response({
