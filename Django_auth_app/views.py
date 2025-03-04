@@ -28,11 +28,11 @@ class designationViews(APIView):
     def post(self, request):
         all_data = Employee.objects.all()
         input_designation =  request.data.get('designation')
-        departments = Employee.objects.filter(department = input_designation)
+        designation = Employee.objects.filter(designation = input_designation)
         if input_designation is not None:
-            designation_detail_serializer = DesignationSerializer(departments , many=True) 
+            designation_detail_serializer = DesignationSerializer(designation , many=True) 
             return Response(designation_detail_serializer.data)
-        designation_detail_serializer = DepartmentSerializer(all_data , many=True)
+        designation_detail_serializer = DesignationSerializer(all_data , many=True)
         return Response(designation_detail_serializer.data)
     
 
