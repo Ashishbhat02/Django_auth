@@ -16,8 +16,8 @@ from django.conf import settings
 
 # THIS API IS FOR ALL EMP_DETAILS PRESENT IN THE DB
 class DetailsViews(APIView):
-    # authentication_classes = [JWTAuthentication]
-    # permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         data = User.objects.all()
         details_serializer = UserSerializer(data , many = True)
@@ -100,8 +100,9 @@ class EC2InstanceView(APIView):
     )
     def get(self,request):
         ec2 = self.ec2_client.describe_instances()
-        # ec2_name = [name['Value'] for name in ec2.get('Key',[])]
-        instances =[]
+        ec2_discription = request.data.get('discription')
+        instances=[]
+        instances_with_discription =[]
         instance_name = ""
         for reservation in ec2['Reservations']:
             for instance_data in reservation['Instances']:
@@ -111,12 +112,20 @@ class EC2InstanceView(APIView):
                                 instance_name = tag['Value']
                                 break
             Instance_id=instance_data['InstanceId']
-            instances.append({
+            instances_with_discription.append({
                 "Instance-name": instance_name,
                 "Instance-id" : Instance_id,
                 "Instance-Discription" : ec2
             })
-        return Response(instances)
+            instances.append({
+                "Instance-name": instance_name,
+                "Instance-id" : Instance_id,
+
+            })
+        if ec2_discription is not None:
+            return Response(instances_with_discription)
+        else:
+            return Response(instances)
 
 
 
