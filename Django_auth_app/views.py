@@ -89,6 +89,37 @@ class LoginView(APIView):
         else:
             return Response({'detail': 'invalid credentials'})
         
+
+# THIS API WILL GIVE NAME OF ALL THE EC2 PRESENT
+class EC2InstanceView(APIView):
+    ec2_client = boto3.client(
+        'ec2',
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        region_name=settings.AWS_S3_REGION_NAME
+    )
+    def get(self,request):
+        ec2 = self.ec2_client.describe_instances()
+        # ec2_name = [name['Value'] for name in ec2.get('Key',[])]
+        instances =[]
+        instance_name = ""
+        for reservation in ec2['Reservations']:
+            for instance_data in reservation['Instances']:
+                if 'Tags' in instance_data:
+                    for tag in instance_data['Tags']:
+                        if tag['Key'] == 'Name':
+                                instance_name = tag['Value']
+                                break
+            Instance_id=instance_data['InstanceId']
+            instances.append({
+                "Instance-name": instance_name,
+                "Instance-id" : Instance_id,
+                "Instance-Discription" : ec2
+            })
+        return Response(instances)
+
+
+
 # THIS API WILL GIVE THE ITEMS PRESENT IN THE S3 BUCKET
 
 
@@ -104,9 +135,7 @@ class S3BucketView(APIView):
 
             s3_bucket = self.s3_client.list_buckets()
             # s3_bucket_name = s3_bucket['Buckets']  
-            s3_bucket_names = [bucket_name['Name'] for bucket_name in s3_bucket.get('Buckets' , [])] 
-
-
+            s3_bucket_names = [bucket_name['Name'] for bucket_name in s3_bucket.get('Buckets' , [])]
 
             #access content of the buckets
 

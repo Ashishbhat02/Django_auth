@@ -11,5 +11,7 @@ urlpatterns = [
      path('emp_designation/', views.designationViews.as_view()),
      path('emp_department/', views.departmentViews.as_view()),
      path('get_s3/', views.S3BucketView.as_view()),
+     path('get_ec2/', views.EC2InstanceView.as_view()),
+
 
 ]
