@@ -98,7 +98,7 @@ class EC2InstanceView(APIView):
         aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
         region_name=settings.AWS_S3_REGION_NAME
     )
-    def get(self,request):
+    def post(self,request):
         ec2 = self.ec2_client.describe_instances()
         ec2_discription = request.data.get('discription')
         instances=[]
@@ -139,7 +139,7 @@ class S3BucketView(APIView):
     aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
     region_name=settings.AWS_S3_REGION_NAME
     )
-   def get(self,request):
+   def post(self,request):
             #access alla the bucket names
 
             s3_bucket = self.s3_client.list_buckets()
